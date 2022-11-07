@@ -1,0 +1,11 @@
+C:\Users\Sveta\projects\coding\c#\lab4\bin\Debug\lab4.exe.config
+C:\Users\Sveta\projects\coding\c#\lab4\bin\Debug\lab4.exe
+C:\Users\Sveta\projects\coding\c#\lab4\bin\Debug\lab4.pdb
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.csproj.AssemblyReference.cache
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.csproj.SuggestedBindingRedirects.cache
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.Form1.resources
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.Properties.Resources.resources
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.csproj.GenerateResource.cache
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.csproj.CoreCompileInputs.cache
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.exe
+C:\Users\Sveta\projects\coding\c#\lab4\obj\Debug\lab4.pdb
