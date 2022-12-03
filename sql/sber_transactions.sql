@@ -46,45 +46,49 @@ companies_to as (
   select company_to, sum(amount) as amount_to from trans group by company_to
 ),
 balance as (     -- формула баланса с группировкой по компании = сумма платежей, где компания в "TO" - сумма платежей, где компания в "FROM"
-select company_to, company_from, (amount_to - amount_from) AS balance
-from companies_from
-join companies_to on company_from = company_to
+	select company_to, company_from, (amount_to - amount_from) AS balance
+	from companies_from
+	join companies_to on company_from = company_to
 ),
 trans_plus as 	-- 	список компаний, принимающих платежи
-(
-SELECT company_to as comp, transaction_id
-FROM trans
-),
-full_trans as (	-- 	Все транзакции с группировкой по компаниям (добавили список компаний, отправляющих платежи)
-SELECT * FROM
-(
-	(SELECT company_from as comp, transaction_id 
-	FROM trans)
-	UNION ALL(SELECT * FROM trans_plus)
-) t1
-),
-stats as (    -- считаем суммарное количество транзакций каждой компании
-SELECT * FROM (
-	SELECT comp, count(DISTINCT transaction_id) as count
-	FROM full_trans
-	GROUP BY comp
+	(
+	SELECT company_to as comp, transaction_id, amount
+	FROM trans
+	),
+	full_trans as (	-- 	Все транзакции с группировкой по компаниям (добавили список компаний, отправляющих платежи)
+	SELECT * FROM
+	(
+		(SELECT company_from as comp, transaction_id, amount
+		FROM trans)
+		UNION ALL(SELECT * FROM trans_plus)
 	) t1
 ),
-last_transactions as (
-  select *,
-      max(transaction_id) OVER (PARTITION BY company_from) as LAST_TRANSACTION_ID 
-  from trans
-),
-last_transactions_final as (
-  select company_from, LAST_TRANSACTION_ID, amount as last_amount from last_transactions where transaction_id = LAST_TRANSACTION_ID
+stats as (    -- считаем суммарное количество транзакций каждой компании и находим последнню транзакций (+ее сумма)
+	SELECT * FROM (
+		SELECT comp, count(DISTINCT transaction_id) as count
+		FROM full_trans
+		GROUP BY comp
+		) t1
+	LEFT JOIN 
+	  ( 
+	  SELECT t2.comp, t2.transaction_id, amount as last_amount FROM 
+	   ( 
+	   SELECT 
+	    comp, 
+	    MAX(transaction_id) as transaction_id 
+	   FROM full_trans 
+	   GROUP BY comp 
+	   ) t2 
+	  LEFT JOIN trans_plus USING(transaction_id) 
+	  ) t3 USING (comp) 
 )
 select region,
     company_count,
     c.company,
     b.balance,
     count,
-    LAST_TRANSACTION_ID,
-    lt.last_amount,
+    stats.transaction_id as last_transaction_id, 
+    stats.last_amount, 
     case 
       when abs(b.balance) < 1000000 and count > 10000 then true 
       else false 
@@ -94,8 +98,6 @@ join trans t
 on c.company = t.company_from
 join balance b
 on t.company_from = b.company_from
-JOIN stats
+left join stats
 on stats.comp = t.company_from
-join last_transactions_final lt 
-on lt.company_from = t.company_from
-group by region, company_count, c.company, b.balance, count, LAST_TRANSACTION_ID, lt.LAST_AMOUNT
+group by region, company_count, c.company, b.balance, count, stats.transaction_id, last_amount
